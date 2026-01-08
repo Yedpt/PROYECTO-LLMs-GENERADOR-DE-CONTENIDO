@@ -1,0 +1,100 @@
+# ===============================
+# Python / Backend
+# ===============================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+dist/
+build/
+
+# Entorno virtual
+.venv/
+venv/
+env/
+
+# ===============================
+# Jupyter Notebooks
+# ===============================
+.ipynb_checkpoints/
+*.nbconvert.ipynb
+
+# ===============================
+# Variables de entorno
+# ===============================
+.env
+.env.*
+!.env.example
+
+# ===============================
+# Logs
+# ===============================
+*.log
+logs/
+
+# ===============================
+# Data / IA / RAG
+# ===============================
+data/raw/*
+data/processed/*
+data/vectorstore/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/vectorstore/.gitkeep
+
+# ===============================
+# Modelos y cachés de IA
+# ===============================
+.cache/
+.cache/**
+*.bin
+*.gguf
+
+# ===============================
+# Ollama (modelos locales)
+# ===============================
+.ollama/
+ollama/
+
+# ===============================
+# Docker
+# ===============================
+*.tar
+docker/*.log
+
+# ===============================
+# Sistema Operativo
+# ===============================
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+
+# Linux
+*~
+
+# ===============================
+# Testing
+# ===============================
+.coverage
+.pytest_cache/
+
+# ===============================
+# IDEs / Editores
+# ===============================
+.vscode/
+.idea/
+*.iml
+
+# ===============================
+# Otros
+# ===============================
+*.tmp
+*.bak
+*.swp
