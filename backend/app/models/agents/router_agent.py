@@ -1,21 +1,28 @@
-from typing import Literal
 from langchain_core.prompts import ChatPromptTemplate
 from app.models.llms.groq_llm import get_groq_llm
 
 llm = get_groq_llm()
 
 router_prompt = ChatPromptTemplate.from_template("""
-Clasifica la siguiente petición en una categoría:
+Eres un sistema experto que decide qué estrategia usar.
 
-- marketing
-- science
+Opciones:
+- rag
+- graph_rag
+- multiagent
 
-Petición: {input}
+Decide SOLO una opción.
 
-Responde SOLO con una palabra.
+Pregunta:
+{question}
 """)
 
-router_chain = router_prompt | llm
+def route(question: str) -> str:
+    response = llm.invoke(router_prompt.format(question=question))
+    decision = response.content.lower()
 
-def route_request(text: str) -> Literal["marketing", "science"]:
-    return router_chain.invoke({"input": text}).strip().lower()
+    if "graph" in decision:
+        return "graph_rag"
+    if "multi" in decision:
+        return "multiagent"
+    return "rag"

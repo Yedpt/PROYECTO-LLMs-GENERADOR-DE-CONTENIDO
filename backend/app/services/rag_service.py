@@ -4,6 +4,7 @@ from app.models.rag.vector_store import create_vectorstore
 from langchain_groq import ChatGroq
 import os
 from dotenv import load_dotenv
+from app.models.graph.graph_rag import build_graph_from_text, query_graph
 
 load_dotenv()
 
@@ -45,3 +46,7 @@ class RAGService:
 
         response = self.llm.invoke(prompt)
         return response.content
+
+def graph_rag_answer(text: str, question: str) -> str:
+    kg = build_graph_from_text(text)
+    return query_graph(kg, question)
