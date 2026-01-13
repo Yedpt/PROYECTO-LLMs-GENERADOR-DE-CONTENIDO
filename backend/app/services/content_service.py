@@ -3,31 +3,71 @@ from app.models.agents.memory import ConversationMemory
 from app.services.rag_service import rag_answer, graph_rag_answer
 from app.models.agents.marketing_agent import marketing_agent
 from app.models.agents.judge_agent import evaluate_answer
+from app.config.quality_config import (
+    MIN_SCORE,
+    MAX_RETRIES,
+    FALLBACK_MESSAGE
+)
+from app.utils.logger import logger
+import time
+
 
 memory = ConversationMemory()
 
 def generate_content(question: str) -> dict:
+    start_time = time.time()
+    logger.info(f"New request received: {question}")
+
     memory.add("user", question)
 
-    strategy = route(question)
+    retries = 0
 
-    if strategy == "graph_rag":
-        answer = graph_rag_answer(
-            text=question,
-            question=question
+    while retries <= MAX_RETRIES:
+        strategy = route(question)
+        logger.info(f"Strategy selected: {strategy}")
+
+        if strategy == "graph_rag":
+            answer = graph_rag_answer(
+                text=question,
+                question=question
+            )
+        elif strategy == "multiagent":
+            answer = marketing_agent(question)
+        else:
+            answer = rag_answer(question)
+
+        evaluation = evaluate_answer(question, answer)
+        logger.info(
+            f"Evaluation score: {evaluation['score']} | Retry: {retries}"
         )
-    elif strategy == "multiagent":
-        answer = marketing_agent(question)
-    else:
-        answer = rag_answer(question)
 
-    evaluation = evaluate_answer(question, answer)
+        if evaluation["score"] >= MIN_SCORE:
+            elapsed = round(time.time() - start_time, 2)
+            logger.info(f"Request completed in {elapsed}s")
 
-    memory.add("assistant", answer)
+            memory.add("assistant", answer)
+
+            return {
+                "answer": answer,
+                "evaluation": evaluation,
+                "strategy_used": strategy,
+                "retries": retries,
+                "time_seconds": elapsed
+            }
+
+        retries += 1
+
+    logger.warning("Fallback response returned")
 
     return {
-        "answer": answer,
-        "evaluation": evaluation,
-        "strategy_used": strategy
+        "answer": FALLBACK_MESSAGE,
+        "evaluation": {
+            "score": 0,
+            "feedback": "Respuesta rechazada por baja calidad."
+        },
+        "strategy_used": None,
+        "retries": retries
     }
+
+
 
