@@ -9,10 +9,42 @@ from app.config.quality_config import (
     FALLBACK_MESSAGE
 )
 from app.utils.logger import logger
+from app.models.llms.groq_llm import get_groq_llm
 import time
 
 
 memory = ConversationMemory()
+
+
+class ContentService:
+    """Servicio para generar contenido usando LLM"""
+    
+    def __init__(self):
+        self.llm = get_groq_llm()
+    
+    def generar_contenido(
+        self,
+        tema: str,
+        plataforma: str,
+        audiencia: str,
+        tono: str
+    ) -> str:
+        """Genera contenido adaptado a la plataforma y audiencia"""
+        
+        prompt = f"""
+        Eres un experto creador de contenido digital.
+
+        Tema: {tema}
+        Plataforma: {plataforma}
+        Audiencia: {audiencia}
+        Tono: {tono}
+
+        Genera un texto listo para publicar, adaptado a la plataforma indicada.
+        """
+
+        response = self.llm.invoke(prompt)
+        return response.content
+
 
 def generate_content(question: str) -> dict:
     start_time = time.time()

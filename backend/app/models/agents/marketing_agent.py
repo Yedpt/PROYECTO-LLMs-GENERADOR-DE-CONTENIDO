@@ -7,13 +7,15 @@ llm = get_groq_llm()
 marketing_prompt = ChatPromptTemplate.from_template("""
 Eres un experto creador de contenido digital.
 
-Tema: {tema}
-Plataforma: {plataforma}
-Audiencia: {audiencia}
-Tono: {tono}
+Genera contenido creativo y relevante para la siguiente solicitud:
 
-Genera contenido listo para publicar.
+{question}
 """)
 
 marketing_chain = marketing_prompt | llm
-marketing_agent = BaseAgent(marketing_chain)
+
+
+def marketing_agent(question: str) -> str:
+    """Genera contenido de marketing usando el agente"""
+    response = marketing_chain.invoke({"question": question})
+    return response.content

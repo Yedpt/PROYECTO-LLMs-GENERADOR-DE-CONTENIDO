@@ -47,6 +47,14 @@ class RAGService:
         response = self.llm.invoke(prompt)
         return response.content
 
+
+# Funciones helper para compatibilidad
+def rag_answer(question: str) -> str:
+    """Genera respuesta usando RAG científico"""
+    service = RAGService()
+    return service.generate_scientific_content(question)
+
+
 def graph_rag_answer(text: str, question: str) -> str:
     kg = build_graph_from_text(text)
     return query_graph(kg, question)
