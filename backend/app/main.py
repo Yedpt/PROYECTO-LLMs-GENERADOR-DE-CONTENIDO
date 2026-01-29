@@ -1,10 +1,17 @@
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from app.controllers.content_controller import router as content_router
+from dotenv import load_dotenv
+load_dotenv()
+
+
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+DATA_DIR = BASE_DIR / "data"
 
 app = FastAPI(title="Generador de Contenido con LLMs")
 
-# Configurar CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://localhost:3000"],
@@ -13,13 +20,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(content_router, prefix="/api")
+app.mount(
+    "/static",
+    StaticFiles(directory=DATA_DIR),
+    name="static"
+)
 
+app.include_router(content_router, prefix="/api")
 
 @app.get("/")
 def root():
-    return {"message": "API de Generador de Contenido con LLMs funcionando"}
-
+    return {"message": "API funcionando"}
 
 @app.get("/health")
 def health():

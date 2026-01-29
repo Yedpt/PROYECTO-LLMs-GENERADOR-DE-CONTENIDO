@@ -23,13 +23,13 @@ const Home = () => {
   const [audience, setAudience] = useState("");
   const [tone, setTone] = useState("");
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState("");
+  const [result, setResult] = useState(null); // 👈 ahora objeto
 
   const handleGenerate = async () => {
     if (!topic) return;
 
     setLoading(true);
-    setResult("");
+    setResult(null);
 
     try {
       const data = await generateContent({
@@ -39,10 +39,11 @@ const Home = () => {
         platform: contentType,
       });
 
-      setResult(data.content);
+      // data = { content, image_url }
+      setResult(data);
     } catch (err) {
       console.error(err);
-      setResult("❌ Error generando contenido");
+      setResult({ content: "❌ Error generando contenido" });
     } finally {
       setLoading(false);
     }
@@ -53,10 +54,11 @@ const Home = () => {
       <div className="w-full max-w-7xl grid grid-cols-12 gap-8 h-155">
 
         {/* PANEL IZQUIERDO */}
-        <div className="col-span-4 bg-slate-900/80 backdrop-blur-xl rounded-2xl 
+        <div
+          className="col-span-4 bg-slate-900/80 backdrop-blur-xl rounded-2xl 
           border border-indigo-500/20 p-6
-          shadow-[0_0_40px_rgba(79,70,229,0.25)] flex flex-col">
-
+          shadow-[0_0_40px_rgba(79,70,229,0.25)] flex flex-col"
+        >
           <h2 className="text-white text-lg font-semibold mb-4">
             ¿Qué quieres generar?
           </h2>
@@ -87,8 +89,8 @@ const Home = () => {
             <div className="mt-6 space-y-3">
               <input
                 className="w-full rounded-lg bg-slate-950/60 border border-white/10 
-                  px-4 py-2 text-sm text-white placeholder-white/40
-                  focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                px-4 py-2 text-sm text-white placeholder-white/40
+                focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 placeholder="Tema"
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
@@ -96,7 +98,7 @@ const Home = () => {
 
               <input
                 className="w-full rounded-lg bg-slate-950/60 border border-white/10 
-                  px-4 py-2 text-sm text-white placeholder-white/40"
+                px-4 py-2 text-sm text-white placeholder-white/40"
                 placeholder="Audiencia"
                 value={audience}
                 onChange={(e) => setAudience(e.target.value)}
@@ -104,14 +106,16 @@ const Home = () => {
 
               <input
                 className="w-full rounded-lg bg-slate-950/60 border border-white/10 
-                  px-4 py-2 text-sm text-white placeholder-white/40"
+                px-4 py-2 text-sm text-white placeholder-white/40"
                 placeholder="Tono"
                 value={tone}
                 onChange={(e) => setTone(e.target.value)}
               />
 
-              <div className="bg-indigo-900/40 border border-indigo-500/30 
-                rounded-lg p-3 text-xs text-indigo-200">
+              <div
+                className="bg-indigo-900/40 border border-indigo-500/30 
+                rounded-lg p-3 text-xs text-indigo-200"
+              >
                 💡 Cuanto más específico seas, mejor será el resultado.
               </div>
 
@@ -119,10 +123,10 @@ const Home = () => {
                 onClick={handleGenerate}
                 disabled={loading}
                 className="w-full mt-2 py-3 rounded-xl font-semibold text-white
-                  bg-linear-to-r from-indigo-600 to-violet-600
-                  hover:from-indigo-700 hover:to-violet-700
-                  shadow-[0_0_25px_rgba(99,102,241,0.8)]
-                  transition-all"
+                bg-linear-to-r from-indigo-600 to-violet-600
+                hover:from-indigo-700 hover:to-violet-700
+                shadow-[0_0_25px_rgba(99,102,241,0.8)]
+                transition-all"
               >
                 {loading ? "Generando..." : "✨ Generar contenido"}
               </button>
@@ -131,19 +135,22 @@ const Home = () => {
         </div>
 
         {/* PANEL DERECHO */}
-        <div className="col-span-8 bg-slate-900/80 backdrop-blur-xl rounded-2xl 
+        <div
+          className="col-span-8 bg-slate-900/80 backdrop-blur-xl rounded-2xl 
           border border-indigo-500/20 flex items-center justify-center
           shadow-[0_0_40px_rgba(79,70,229,0.25)]
-          relative overflow-hidden p-8">
-
+          relative overflow-hidden p-8"
+        >
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.2),transparent_70%)]" />
 
           {!contentType && (
             <div className="relative z-10 text-center">
-              <div className="w-20 h-20 mx-auto mb-6 rounded-2xl 
+              <div
+                className="w-20 h-20 mx-auto mb-6 rounded-2xl 
                 bg-indigo-600/30 
                 shadow-[0_0_30px_rgba(99,102,241,0.8)]
-                flex items-center justify-center">
+                flex items-center justify-center"
+              >
                 <FiEdit3 className="text-indigo-300 w-10 h-10" />
               </div>
 
@@ -156,6 +163,7 @@ const Home = () => {
                 contenido optimizado con IA
               </p>
 
+              {/* 👇 LAS 4 CAJITAS SIGUEN AQUÍ */}
               <div className="grid grid-cols-2 gap-3 max-w-md mx-auto text-sm">
                 <span className="bg-indigo-600/30 text-white py-2 rounded-lg">
                   ✓ Multi-plataforma
@@ -174,13 +182,24 @@ const Home = () => {
           )}
 
           {result && (
-            <pre className="relative z-10 w-full h-full overflow-auto 
-              bg-slate-950/60 rounded-xl p-6 text-sm text-white whitespace-pre-wrap">
-              {result}
-            </pre>
+            <div className="relative z-10 w-full h-full overflow-auto">
+              <pre
+                className="bg-slate-950/60 rounded-xl p-6 text-sm 
+                text-white whitespace-pre-wrap mb-6"
+              >
+                {result.content}
+              </pre>
+
+              {result.image_url && (
+                <img
+                  src={`http://localhost:8000${result.image_url}`}
+                  alt="Imagen generada por IA"
+                  className="rounded-xl border border-white/10 shadow-lg max-w-full"
+                />
+              )}
+            </div>
           )}
         </div>
-
       </div>
     </div>
   );

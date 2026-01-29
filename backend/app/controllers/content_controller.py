@@ -6,12 +6,14 @@ from app.services.content_service import ContentService
 router = APIRouter()
 service = ContentService()
 
+
 @router.post("/generate", response_model=ContentResponse)
 def generate_content(request: ContentRequest):
-    content = service.generar_contenido(
+    result = service.generar_contenido(
         tema=request.tema,
         plataforma=request.plataforma,
         audiencia=request.audiencia,
         tono=request.tono
     )
-    return ContentResponse(content=content)
+
+    return ContentResponse(**result)

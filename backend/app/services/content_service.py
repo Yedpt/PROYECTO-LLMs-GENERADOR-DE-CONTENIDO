@@ -10,6 +10,7 @@ from app.config.quality_config import (
 )
 from app.utils.logger import logger
 from app.models.llms.groq_llm import get_groq_llm
+from app.services.image_service import generate_image
 import time
 
 
@@ -18,19 +19,19 @@ memory = ConversationMemory()
 
 class ContentService:
     """Servicio para generar contenido usando LLM"""
-    
+
     def __init__(self):
         self.llm = get_groq_llm()
-    
+
     def generar_contenido(
         self,
         tema: str,
         plataforma: str,
         audiencia: str,
         tono: str
-    ) -> str:
-        """Genera contenido adaptado a la plataforma y audiencia"""
-        
+    ) -> dict:
+        """Genera contenido + imagen"""
+
         prompt = f"""
         Eres un experto creador de contenido digital.
 
@@ -43,9 +44,22 @@ class ContentService:
         """
 
         response = self.llm.invoke(prompt)
-        return response.content
+        content = response.content
+
+        image_prompt = (
+            f"High quality illustration for a {plataforma} post about {tema}, "
+            f"targeted at {audiencia}, modern, clean, professional, digital art"
+        )
+
+        image_url = generate_image(image_prompt)
+
+        return {
+            "content": content,
+            "image_url": image_url
+        }
 
 
+# ⚠️ TU SISTEMA AVANZADO NO SE TOCA
 def generate_content(question: str) -> dict:
     start_time = time.time()
     logger.info(f"New request received: {question}")
@@ -100,6 +114,3 @@ def generate_content(question: str) -> dict:
         "strategy_used": None,
         "retries": retries
     }
-
-
-
