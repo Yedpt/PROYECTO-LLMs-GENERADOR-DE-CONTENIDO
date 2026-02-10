@@ -33,6 +33,37 @@ const Home = () => {
   const [result, setResult] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
+  const delay = (ms) => new Promise((res) => setTimeout(res, ms));
+
+  const pollForImage = async (tema) => {
+    setCheckingImage(true);
+    const maxAttempts = 15;
+    for (let i = 0; i < maxAttempts; i++) {
+      try {
+        const res = await api.get(`/api/image`, { params: { tema } });
+        const imageField = res.data?.image || res.data?.image_url || res.data?.image_filename || res.data?.filename;
+        if (imageField) {
+          let imageUrl = imageField;
+          if (!imageUrl.startsWith("http")) {
+            if (imageUrl.startsWith("/")) imageUrl = `${api.defaults.baseURL}${imageUrl}`;
+            else imageUrl = `${api.defaults.baseURL}/images/${imageUrl}`;
+          }
+
+          setResult((prev) => ({ ...prev, image_url: imageUrl }));
+          setCheckingImage(false);
+          return imageUrl;
+        }
+      } catch (err) {
+        console.error("pollForImage error", err);
+      }
+
+      await delay(1000);
+    }
+
+    setCheckingImage(false);
+    return null;
+  };
+
   const handleGenerate = async () => {
     if (!topic) return;
 
@@ -74,6 +105,11 @@ const Home = () => {
       }
 
       setResult({ content: contentText, image_url: imageUrl });
+
+      // Si no vino la imagen en la misma respuesta, iniciar polling para detectarla cuando esté lista
+      if (!imageUrl) {
+        pollForImage(topic).catch((e) => console.error(e));
+      }
     } catch (err) {
       console.error(err);
       setResult({ content: "❌ Error generando contenido" });
@@ -210,30 +246,40 @@ const Home = () => {
                     </ReactMarkdown>
                   </div>
 
-                  {!result.image_url && (
-                    <button
-                      onClick={handleCheckImage}
-                      disabled={checkingImage}
-                      className="px-4 py-2 rounded-lg bg-indigo-600 text-white"
-                    >
-                      {checkingImage ? "Buscando imagen..." : "🖼️ Ver imagen"}
-                    </button>
+                  {/* Imagen: aparecerá automáticamente cuando el backend la genere. */}
+                  {!result.image_url && checkingImage && (
+                    <div className="mt-4 w-full rounded-xl bg-slate-800/60 p-6 flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 animate-pulse" />
+                      <div className="text-white">Buscando imagen generada…</div>
+                    </div>
                   )}
 
                   {result.image_url && (
                     <div className="mt-4">
-                      <button
-                        onClick={() => setModalOpen(true)}
-                        className="w-full rounded-xl overflow-hidden border border-white/10"
-                        aria-label="Abrir imagen"
-                      >
-                        <img
-                          src={result.image_url.startsWith("http") ? result.image_url : `${api.defaults.baseURL}${result.image_url}`}
-                          className="rounded-xl mt-0 max-w-full h-auto object-cover"
-                          alt="Imagen generada"
-                        />
-                        <div className="py-2 text-center text-sm text-white/80 bg-black/10">Ver imagen ampliada</div>
-                      </button>
+                      <div className="rounded-xl overflow-hidden border border-white/10 bg-slate-950/40">
+                        <button
+                          onClick={() => setModalOpen(true)}
+                          className="w-full text-left"
+                          aria-label="Abrir imagen"
+                        >
+                          <img
+                            src={result.image_url.startsWith("http") ? result.image_url : `${api.defaults.baseURL}${result.image_url}`}
+                            className="w-full h-auto object-cover max-h-[360px]"
+                            alt="Imagen generada"
+                          />
+                        </button>
+
+                        <div className="p-3 flex items-center justify-between">
+                          <div className="text-sm text-white/80">Imagen generada</div>
+                          <a
+                            href={result.image_url.startsWith("http") ? result.image_url : `${api.defaults.baseURL}${result.image_url}`}
+                            download
+                            className="inline-block px-3 py-2 bg-indigo-600 text-white rounded-lg shadow-md hover:opacity-90 text-sm"
+                          >
+                            Descargar
+                          </a>
+                        </div>
+                      </div>
                     </div>
                   )}
 
