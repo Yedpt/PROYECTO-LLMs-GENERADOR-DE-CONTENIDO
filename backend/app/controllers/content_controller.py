@@ -4,6 +4,7 @@ from app.schema.content_response import ContentResponse
 from app.services.content_service import ContentService
 from fastapi import Query
 from pathlib import Path
+from app.core.paths import GENERATED_IMAGES_DIR
 
 router = APIRouter()
 service = ContentService()
@@ -36,14 +37,20 @@ def generate_content(
 @router.get("/image")
 def get_image(tema: str = Query(...)):
     filename = f"img_{abs(hash(tema))}.png"
-    image_path = Path("/data/generated_images") / filename
+    image_path = GENERATED_IMAGES_DIR / filename
+
+    # Log para debugging: ruta absoluta donde debería guardarse la imagen
+    print(f"[get_image] buscando imagen: {image_path}")
 
     if image_path.exists():
-        # Devolver ruta pública accesible (montada en /data)
         return {
-            "image_url": f"/data/generated_images/{filename}"
+            "image_url": f"/data/generated_images/{filename}",
+            "absolute_path": str(image_path),
+            "exists": True,
         }
 
     return {
-        "image_url": None
+        "image_url": None,
+        "absolute_path": str(GENERATED_IMAGES_DIR / filename),
+        "exists": False,
     }

@@ -43,15 +43,20 @@ const Home = () => {
         const res = await api.get(`/api/image`, { params: { tema } });
         const imageField = res.data?.image || res.data?.image_url || res.data?.image_filename || res.data?.filename;
         if (imageField) {
-          let imageUrl = imageField;
-          if (!imageUrl.startsWith("http")) {
-            if (imageUrl.startsWith("/")) imageUrl = `${api.defaults.baseURL}${imageUrl}`;
-            else imageUrl = `${api.defaults.baseURL}/images/${imageUrl}`;
-          }
+          let imageUrl = imageField.startsWith("http") ? imageField : (imageField.startsWith("/") ? `${api.defaults.baseURL}${imageField}` : `${api.defaults.baseURL}/images/${imageField}`);
 
-          setResult((prev) => ({ ...prev, image_url: imageUrl }));
-          setCheckingImage(false);
-          return imageUrl;
+          // Validar que la imagen sea accesible: solicitar como blob
+          try {
+            const blobResp = await axios.get(imageUrl, { responseType: "blob" });
+            if (blobResp.status === 200 && blobResp.data && blobResp.data.size > 0) {
+              setResult((prev) => ({ ...prev, image_url: imageUrl }));
+              setCheckingImage(false);
+              return imageUrl;
+            }
+          } catch (err) {
+            // aún no accesible, continuar polling
+            console.warn("Imagen no accesible todavía:", imageUrl, err.message || err);
+          }
         }
       } catch (err) {
         console.error("pollForImage error", err);
