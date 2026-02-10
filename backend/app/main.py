@@ -4,11 +4,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.controllers.content_controller import router as content_router
 from dotenv import load_dotenv
-load_dotenv()
 
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 DATA_DIR = BASE_DIR / "data"
+
+# 🔒 Seguridad: crea la carpeta si no existe
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 app = FastAPI(title="Generador de Contenido con LLMs")
 
@@ -20,10 +23,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ✅ AQUÍ ESTÁ LA CLAVE
 app.mount(
-    "/static",
+    "/data",
     StaticFiles(directory=DATA_DIR),
-    name="static"
+    name="data"
 )
 
 app.include_router(content_router, prefix="/api")

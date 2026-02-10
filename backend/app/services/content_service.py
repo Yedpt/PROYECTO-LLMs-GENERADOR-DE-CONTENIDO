@@ -18,19 +18,17 @@ memory = ConversationMemory()
 
 
 class ContentService:
-    """Servicio para generar contenido usando LLM"""
-
     def __init__(self):
         self.llm = get_groq_llm()
 
-    def generar_contenido(
+    # 🔹 SOLO TEXTO (rápido)
+    def generar_contenido_texto(
         self,
         tema: str,
         plataforma: str,
         audiencia: str,
         tono: str
     ) -> dict:
-        """Genera contenido + imagen"""
 
         prompt = f"""
         Eres un experto creador de contenido digital.
@@ -40,23 +38,30 @@ class ContentService:
         Audiencia: {audiencia}
         Tono: {tono}
 
-        Genera un texto listo para publicar, adaptado a la plataforma indicada.
+        Genera un texto listo para publicar.
         """
 
         response = self.llm.invoke(prompt)
-        content = response.content
 
+        return {
+            "content": response.content,
+            "image_url": None  # 👈 todavía no existe
+        }
+
+    # 🔹 IMAGEN EN BACKGROUND (lenta)
+    def generar_imagen_background(
+        self,
+        tema: str,
+        plataforma: str,
+        audiencia: str
+    ):
         image_prompt = (
             f"High quality illustration for a {plataforma} post about {tema}, "
             f"targeted at {audiencia}, modern, clean, professional, digital art"
         )
 
-        image_url = generate_image(image_prompt)
+        generate_image(image_prompt)
 
-        return {
-            "content": content,
-            "image_url": image_url
-        }
 
 
 # ⚠️ TU SISTEMA AVANZADO NO SE TOCA
