@@ -4,6 +4,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import api from "../services/api";
 import { generateContent } from "../services/contentService";
+import ImageModal from "../components/ImageModal";
 import {
   FiFileText,
   FiLinkedin,
@@ -30,6 +31,7 @@ const Home = () => {
   const [loading, setLoading] = useState(false);
   const [checkingImage, setCheckingImage] = useState(false);
   const [result, setResult] = useState(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const handleGenerate = async () => {
     if (!topic) return;
@@ -200,33 +202,49 @@ const Home = () => {
             </div>
           )}
 
-          {result && (
-            <div className="relative z-10 h-full overflow-y-auto pr-2">
-              <div className="bg-slate-950/60 rounded-xl p-6 text-white mb-4 max-w-full markdown-body">
-                <ReactMarkdown remarkPlugins={[remarkGfm]} className="prose break-words">
-                  {result.content}
-                </ReactMarkdown>
-              </div>
+              {result && (
+                <div className="relative z-10 h-full overflow-y-auto pr-2">
+                  <div className="bg-slate-950/60 rounded-xl p-6 text-white mb-4 max-w-full markdown-body">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} className="prose break-words">
+                      {result.content}
+                    </ReactMarkdown>
+                  </div>
 
-              {!result.image_url && (
-                <button
-                  onClick={handleCheckImage}
-                  disabled={checkingImage}
-                  className="px-4 py-2 rounded-lg bg-indigo-600 text-white"
-                >
-                  {checkingImage ? "Buscando imagen..." : "🖼️ Ver imagen"}
-                </button>
-              )}
+                  {!result.image_url && (
+                    <button
+                      onClick={handleCheckImage}
+                      disabled={checkingImage}
+                      className="px-4 py-2 rounded-lg bg-indigo-600 text-white"
+                    >
+                      {checkingImage ? "Buscando imagen..." : "🖼️ Ver imagen"}
+                    </button>
+                  )}
 
-              {result.image_url && (
-                <img
-                  src={`http://localhost:8000${result.image_url}`}
-                  className="rounded-xl mt-4 border border-white/10 max-w-full"
-                  alt="Imagen generada"
-                />
+                  {result.image_url && (
+                    <div className="mt-4">
+                      <button
+                        onClick={() => setModalOpen(true)}
+                        className="w-full rounded-xl overflow-hidden border border-white/10"
+                        aria-label="Abrir imagen"
+                      >
+                        <img
+                          src={result.image_url.startsWith("http") ? result.image_url : `${api.defaults.baseURL}${result.image_url}`}
+                          className="rounded-xl mt-0 max-w-full h-auto object-cover"
+                          alt="Imagen generada"
+                        />
+                        <div className="py-2 text-center text-sm text-white/80 bg-black/10">Ver imagen ampliada</div>
+                      </button>
+                    </div>
+                  )}
+
+                  <ImageModal
+                    src={result?.image_url?.startsWith("http") ? result.image_url : `${api.defaults.baseURL}${result?.image_url}`}
+                    alt={topic}
+                    open={modalOpen}
+                    onClose={() => setModalOpen(false)}
+                  />
+                </div>
               )}
-            </div>
-          )}
         </div>
       </div>
     </div>
