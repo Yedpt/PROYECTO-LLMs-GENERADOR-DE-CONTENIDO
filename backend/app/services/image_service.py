@@ -51,5 +51,6 @@ def generate_image(prompt: str) -> Optional[str]:
 
     print(f"✅ Imagen guardada en {filepath}")
 
-    # 🔥 ESTA URL SÍ COINCIDE CON /static
-    return f"/static/generated_images/{filename}"
+    # El servidor monta la carpeta `data` en /data (ver `main.py`).
+    # Devolver la ruta pública correcta para que el frontend la consuma.
+    return f"/data/generated_images/{filename}"
