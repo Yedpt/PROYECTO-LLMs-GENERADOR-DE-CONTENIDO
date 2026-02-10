@@ -45,17 +45,21 @@ const Home = () => {
         if (imageField) {
           let imageUrl = imageField.startsWith("http") ? imageField : (imageField.startsWith("/") ? `${api.defaults.baseURL}${imageField}` : `${api.defaults.baseURL}/images/${imageField}`);
 
-          // Validar que la imagen sea accesible: solicitar como blob
+          // Validar que la imagen sea accesible usando un objeto Image (evita CORS en XHR)
           try {
-            const blobResp = await axios.get(imageUrl, { responseType: "blob" });
-            if (blobResp.status === 200 && blobResp.data && blobResp.data.size > 0) {
-              setResult((prev) => ({ ...prev, image_url: imageUrl }));
-              setCheckingImage(false);
-              return imageUrl;
-            }
+            await new Promise((resolve, reject) => {
+              const img = new Image();
+              img.onload = () => resolve(true);
+              img.onerror = (e) => reject(e);
+              img.src = imageUrl;
+            });
+
+            setResult((prev) => ({ ...prev, image_url: imageUrl }));
+            setCheckingImage(false);
+            return imageUrl;
           } catch (err) {
             // aún no accesible, continuar polling
-            console.warn("Imagen no accesible todavía:", imageUrl, err.message || err);
+            console.warn("Imagen no accesible todavía (Image loader):", imageUrl, err);
           }
         }
       } catch (err) {

@@ -43,14 +43,21 @@ def get_image(tema: str = Query(...)):
     print(f"[get_image] buscando imagen: {image_path}")
 
     if image_path.exists():
+        try:
+            size = image_path.stat().st_size
+        except Exception:
+            size = None
+
         return {
             "image_url": f"/data/generated_images/{filename}",
             "absolute_path": str(image_path),
             "exists": True,
+            "size": size,
         }
 
     return {
         "image_url": None,
         "absolute_path": str(GENERATED_IMAGES_DIR / filename),
         "exists": False,
+        "size": 0,
     }
